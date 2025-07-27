@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Juego del Impostor - Estilo Cartas</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Rubik', sans-serif;
+      background: #fff;
+      color: #222;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2rem;
+      color: #222;
+    }
+
+    label,
+    select,
+    button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    select,
+    button {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
+      background: #f9f9f9;
+      color: #222;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    select:hover,
+    button:hover {
+      background-color: #e1e1e1;
+      border-color: #999;
+      cursor: pointer;
+    }
+
+    button {
+      font-weight: bold;
+      border: none;
+      background: #ff4757;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background: #e84118;
+    }
+
+    /* Botón de ayuda fijo */
+    .help-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 35px;
+      height: 35px;
+      font-size: 1.5rem;
+      border-radius: 50%;
+      border: none;
+      background: #ff4757;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+align-items: center;
+justify-content: center;
+      user-select: none;
+      transition: background-color 0.3s;
+      z-index: 1000;
+    }
+
+    .help-button:hover {
+      background: #e84118;
+    }
+
+    .card {
+      background: white;
+      color: #222;
+      border-radius: 12px;
+      padding: 40px 20px;
+      margin-top: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      min-height: 180px;
+      opacity: 0;
+      animation: fadeIn 0.5s forwards;
+    }
+
+    .famoso {
+      font-size: 2rem;
+      color: green;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .impostor {
+      font-size: 2rem;
+      color: red;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .small {
+      font-size: 1rem;
+      color: #888;
+    }
+
+    .bottom-button {
+      margin-top: 20px;
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: white;
+      color: #222;
+      padding: 25px 30px;
+      border-radius: 12px;
+      max-width: 400px;
+      text-align: left;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+      font-size: 1rem;
+      line-height: 1.4;
+      min-height: 200px;
+        max-height: 80vh;
+  overflow-y: auto;
+    }
+
+    .modal h2 {
+      margin-bottom: 15px;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: #ff4757;
+    }
+
+    .modal p {
+      margin-bottom: 12px;
+    }
+
+    /* Animación fadeIn */
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Botón de ayuda fijo -->
+  <button class="help-button" aria-label="Ayuda" onclick="abrirModal()">?</button>
+
+  <div class="container" id="main">
+    <h1>Juego del Impostor</h1>
+
+    <label for="jugadores">Número de jugadores:</label>
+    <select id="jugadores">
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5" selected>5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+    </select>
+
+    <label for="impostores">Número de impostores:</label>
+<select id="impostores">
+  <option value="1" selected>1</option>
+  <option value="2">2</option>
+</select>
+
+<label for="tematica">Temática:</label>
+<select id="tematica">
+  <option value="todos" selected>Todos</option>
+  <option value="uruguayos">Uruguayos</option>
+  <option value="musica">Música</option>
+  <option value="television">Televisión</option>
+</select>
+
+<label for="duracion">Duración de la ronda (minutos):</label>
+<select id="duracion">
+  <option value="1">1 minuto</option>
+  <option value="2">2 minutos</option>
+  <option value="3" selected>3 minutos</option>
+  <option value="4">4 minutos</option>
+  <option value="5">5 minutos</option>
+</select>
+
+<button onclick="comenzarJuego()">Comenzar</button>
+  </div>
+  
+
+  <!-- Modal de ayuda -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+     <h2 id="modalTitle">¿Cómo jugar?</h2>
+
+<p>En este juego hay <strong>1 o 2 impostores</strong> mezclados entre los jugadores.</p>
+
+<p>Al iniciar, cada jugador verá en secreto su rol:</p>
+<ul style="padding-left: 20px;">
+  <li>La mayoría verá un mismo personaje famoso.</li>
+  <li>Uno o dos jugadores verán solo la palabra <strong>IMPOSTOR</strong>.</li>
+</ul>
+
+<p>Luego, comienza una ronda de debate donde <strong>todos deben hablar</strong>, dar pistas, opinar y analizar.</p>
+
+<p>🎯 <strong>Objetivos del juego:</strong></p>
+<ul style="padding-left: 20px;">
+  <li><strong>Famosos:</strong> deben descubrir y eliminar al impostor.</li>
+  <li><strong>Impostor(es):</strong> deben disimular hasta quedar mano a mano con otro jugador <em>o</em> lograr que se termine el tiempo sin ser descubiertos.</li>
+</ul>
+
+<p>⏱️ Al finalizar la ronda (cuando termina el tiempo), se realiza una votación para intentar identificar al impostor. El jugador con más votos es eliminado.</p>
+
+<p>El juego continúa hasta que:</p>
+<ul style="padding-left: 20px;">
+  <li>El impostor es eliminado (ganan los famosos), o</li>
+  <li>El impostor queda entre los últimos 2 jugadores o el tiempo finaliza sin ser descubierto (gana el impostor).</li>
+</ul>
+
+<p><strong>¡Usen su intuición, hablen con cuidado y que gane el mejor mentiroso o detective!</strong></p>
+
+<button class="bottom-button" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+
+  <script>
+    const famosos = [
+      "Ibai",
+      "Orsi",
+      "Milei",
+      "Maxi Gómez",
+      "Aitana",
+      "Adam Sandler",
+      "Gaspi",
+      "Mauro Icardi",
+      "China Suárez",
+      "Wanda Nara",
+      "L-Gante",
+      "Nicolás de la Cruz",
+      "Luis Suárez",
+      "Lionel Messi",
+      "Diego Forlán",
+      "Cristiano Ronaldo",
+      "Los Tussi Warrior",
+      "La Vela Puerca",
+      "Luis Lacalle Pou",
+      "Graciela Alfano",
+      "Moria Casán",
+      "Susana Giménez",
+      "Jeremía Recoba",
+      "El Chino Recoba",
+      "Pacheco",
+      "Tomás Mazza",
+      "Rodrigo De Paul",
+      "Charly García",
+      "Bad Bunny",
+      "Karol G",
+      "Tini",
+      "Iván de Pineda",
+      "Duki",
+      "María Becerra",
+      "Shakira",
+      "Bruce Willis",
+      "Mirtha Legrand",
+      "Keylor Navas",
+      "Manuel Neuer",
+      "Pampita",
+      "Martín Palermo",
+      "El Bananero",
+      "Martin Cirio",
+      "Boggio",
+      "Nico López",
+      "Petit",
+      "Eduardo Vargas",
+      "Carneiro",
+      "Mejía",
+      "Donald Trump",
+
+      "Paulo Londra",
+      "Lali Espósito",
+      "Joaquín Phoenix",
+      "Ricardo Darín",
+      "Diego Maradona",
+      "Pelé",
+      "Gabriel Batistuta",
+      "Gustavo Cerati",
+      "Fito Páez",
+      "Andrés Iniesta",
+      "Sergio Agüero",
+      "Fernando Muslera",
+      "Natalia Oreiro",
+      "Ricardo Fort",
+      "José Mujica",
+      "Diego Torres",
+      "Sofía Vergara",
+      "Carlos Tévez",
+      "Manu Ginóbili",
+      "Alejandro Sanz",
+      "Marcelo Tinelli",
+      "Florencia Peña",
+      "Luisana Lopilato",
+      "Diego Peretti",
+      "Maxi Rodríguez",
+      "Juana Viale",
+      "Javier Mascherano",
+      "Juan Román Riquelme",
+      "Ricky Martin",
+      "Tini Stoessel",
+      "Agustín Casanova",
+      "Fede Valverde",
+      "Nathy Peluso",
+      "Paulo Dybala",
+      "Ángel Di María",
+      "Ricardo Vairo",
+      "Flavio Perchman",
+      "Alfonso Espino",
+      "Rodrigo Bentancur",
+      "Facundo Pellistri",
+      "Santiago Cartagena"
+    ];
+    const famososPorTematica = {
+  todos: [...famosos],
+  uruguayos: [
+    "Luis Suárez", "Edinson Cavani", "Agustín Casanova", "La Vela Puerca", "Luis Lacalle Pou",
+    "El Bananero", "José Mujica", "Fede Valverde", "Natalia Oreiro", "Diego Forlán", "Fernando Muslera",
+    "Ricardo Vairo", "Flavio Perchman", "Petit", "Maxi de la Cruz", "Yamandú Cardozo", "Carlos Bueno",
+    "Santiago Cartagena", "Facundo Pellistri"
+  ],
+  musica: [
+    "Shakira", "Karol G", "Bad Bunny", "Tini", "Duki", "María Becerra", "Charly García",
+    "Fito Páez", "Cerati", "Lali Espósito", "Ricky Martin", "Maluma", "Bizarrap", "Paulo Londra",
+    "Nathy Peluso", "Agustín Casanova", "Tini Stoessel", "Diego Torres"
+  ],
+  television: [
+    "Marcelo Tinelli", "Mirtha Legrand", "Susana Giménez", "Flor Peña", "Guido Kaczka",
+    "Iván de Pineda", "Wanda Nara", "Pampita", "Polino", "Nicole Neumann",
+    "Catherine Fulop", "Juana Viale", "Ricardo Fort", "Moria Casán", "Graciela Alfano"
+  ]
+};
+
+    let totalJugadores = 0;
+    let totalImpostores = 0;
+    let jugadorActual = 1;
+    let impostoresArray = [];
+    let famosoElegido = "";
+    let tematicaSeleccionada = "todos"; // para mantener la selección actual
+let famososDisponibles = [];        // para evitar repetidos
+let tematicaAnterior = "todos";
+let duracionRonda = 3;
+
+
+    function comenzarJuego() {
+  totalJugadores = parseInt(document.getElementById("jugadores").value);
+  totalImpostores = parseInt(document.getElementById("impostores").value);
+  tematicaSeleccionada = document.getElementById("tematica").value;
+  duracionRonda = parseInt(document.getElementById("duracion").value);
+
+// Si es una temática nueva o se agotaron los disponibles, reiniciar la lista
+if (tematicaSeleccionada !== tematicaAnterior || famososDisponibles.length === 0) {
+  famososDisponibles = [...famososPorTematica[tematicaSeleccionada]];
+  tematicaAnterior = tematicaSeleccionada; // actualizamos la anterior
+}
+
+  jugadorActual = 1;
+  impostoresArray = [];
+
+  const lista = famososPorTematica[tematicaSeleccionada];
+  // Elegimos un famoso aleatorio de los disponibles y lo eliminamos de la lista
+const randomIndex = Math.floor(Math.random() * famososDisponibles.length);
+famosoElegido = famososDisponibles.splice(randomIndex, 1)[0]; // elimina y guarda
+
+  while (impostoresArray.length < totalImpostores) {
+    let random = Math.floor(Math.random() * totalJugadores) + 1;
+    if (!impostoresArray.includes(random)) {
+      impostoresArray.push(random);
+    }
+  }
+
+  mostrarSiguiente();
+}
+
+    function mostrarSiguiente() {
+      const container = document.getElementById("main");
+      container.innerHTML = `
+        <div class="card">
+          <h2>Jugador ${jugadorActual}</h2>
+          <button onclick="revelar()">Revelar</button>
+        </div>
+      `;
+    }
+
+    function revelar() {
+      const container = document.getElementById("main");
+      const esImpostor = impostoresArray.includes(jugadorActual);
+      const texto = esImpostor
+        ? `<div class="impostor">IMPOSTOR</div>`
+        : `<div class="famoso">${famosoElegido}</div>`;
+      const siguienteBtn =
+  jugadorActual < totalJugadores
+    ? `<button class="bottom-button" onclick="siguiente()">Continuar</button>`
+    : `<button class="bottom-button" onclick="mostrarPantallaDeJuego()">¡A jugar!</button>`;
+
+      container.innerHTML = `
+        <div class="card">
+          <h2>Jugador ${jugadorActual}</h2>
+          ${texto}
+          ${siguienteBtn}
+        </div>
+      `;
+    }
+
+  function siguiente() {
+  const container = document.getElementById("main");
+
+  if (jugadorActual < totalJugadores) {
+    container.innerHTML = `
+      <div class="card">
+        <h2>Pasá el teléfono</h2>
+        <p>Pasá el dispositivo al <strong>jugador ${jugadorActual + 1}</strong> sin mostrar tu rol.</p>
+        <button class="bottom-button" onclick="continuarSiguiente()">Listo</button>
+      </div>
+    `;
+  } else {
+    // Si era el último, vamos directo al reinicio
+    reiniciar();  }}function continuarSiguiente() {
+  jugadorActual++;
+  mostrarSiguiente();
+}
+
+
+   function reiniciar() {
+  const container = document.getElementById("main");
+  container.innerHTML = `
+    <h1>Juego del Impostor</h1>
+
+    <label for="jugadores">Número de jugadores:</label>
+    <select id="jugadores">
+      ${[3, 4, 5, 6, 7, 8].map(num => `
+        <option value="${num}" ${totalJugadores === num ? "selected" : ""}>${num}</option>
+      `).join("")}
+    </select>
+
+    <label for="impostores">Número de impostores:</label>
+    <select id="impostores">
+      <option value="1" ${totalImpostores === 1 ? "selected" : ""}>1</option>
+      <option value="2" ${totalImpostores === 2 ? "selected" : ""}>2</option>
+    </select>
+
+    <label for="tematica">Temática:</label>
+    <select id="tematica">
+      <option value="todos" ${tematicaSeleccionada === "todos" ? "selected" : ""}>Todos</option>
+      <option value="uruguayos" ${tematicaSeleccionada === "uruguayos" ? "selected" : ""}>Uruguayos</option>
+      <option value="musica" ${tematicaSeleccionada === "musica" ? "selected" : ""}>Música</option>
+      <option value="television" ${tematicaSeleccionada === "television" ? "selected" : ""}>Televisión</option>
+    </select>
+
+    <label for="duracion">Duración de la ronda (minutos):</label>
+    <select id="duracion">
+      ${[1, 2, 3, 4, 5].map(num => `
+        <option value="${num}" ${duracionRonda === num ? "selected" : ""}>${num} minuto${num > 1 ? "s" : ""}</option>
+      `).join("")}
+    </select>
+
+    <button onclick="comenzarJuego()">Comenzar</button>
+  `;
+}
+    
+    function mostrarPantallaDeJuego() {
+  const container = document.getElementById("main");
+  container.innerHTML = `
+    <div class="card">
+      <h2>⏳ ¡Empieza la ronda!</h2>
+      <p>Tenés <strong id="tiempoRonda">${duracionRonda}:00</strong> minutos para debatir...</p>
+      <p>Cuando estén listos, pueden votar antes que se acabe el tiempo.</p>
+      <button id="terminarRondaBtn" class="bottom-button">Terminar ronda</button>
+    </div>
+  `;
+
+  let minutos = duracionRonda;
+  let segundos = 0;
+  const tiempoEl = document.getElementById("tiempoRonda");
+
+  const intervalo = setInterval(() => {
+    if (segundos === 0) {
+      if (minutos === 0) {
+        clearInterval(intervalo);
+        tiempoEl.innerText = "¡Tiempo terminado!";
+        document.getElementById("terminarRondaBtn").textContent = "Votar ahora";
+        return;
+      }
+      minutos--;
+      segundos = 59;
+    } else {
+      segundos--;
+    }
+
+    const minTexto = minutos.toString().padStart(1, '0');
+    const segTexto = segundos.toString().padStart(2, '0');
+    tiempoEl.innerText = `${minTexto}:${segTexto}`;
+  }, 1000);
+
+  document.getElementById("terminarRondaBtn").addEventListener("click", () => {
+    clearInterval(intervalo);
+    reiniciar();
+  });
+}
+    // Funciones para abrir y cerrar modal ayuda
+    function abrirModal() {
+      document.getElementById('modal').classList.add('active');
+    }
+
+    function cerrarModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    // Cerrar modal con tecla ESC
+    window.addEventListener('keydown', (e) => {
+      if (e.key === "Escape") {
+        cerrarModal();
+      }
+    })
+    
+</script>
+</body>
+</html>
